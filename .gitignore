@@ -1,0 +1,63 @@
+# Build directories
+build/
+bin/
+obj/
+out/
+Debug/
+Release/
+
+# Make output
+*.d
+*.dep
+*.gcda
+*.gcno
+*.gcov
+
+# Compiled object files
+*.o
+*.obj
+*.lo
+
+# Libraries
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.la
+
+# Executables
+mcvi
+*.exe
+*.out
+*.app
+
+# CMake and generated build files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# Autotools
+autom4te.cache/
+aclocal.m4
+config.cache
+config.log
+config.status
+configure
+libtool
+
+# Logs and runtime output
+*.log
+core
+core.*
+
+# Editor and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
