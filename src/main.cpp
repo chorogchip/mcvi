@@ -10,6 +10,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "pos.hpp"
+#include "world.hpp"
 #include "world_io.hpp"
 
 namespace {
