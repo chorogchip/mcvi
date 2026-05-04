@@ -17,8 +17,7 @@
 namespace mcvi {
 namespace {
 
-constexpr std::int32_t kSpongeSchematicVersion = 2;
-constexpr std::int32_t kMinecraftDataVersion = 3700;
+constexpr std::int32_t kSpongeSchematicVersion = 3;
 
 struct Bounds {
     int min_x = 0;
@@ -95,6 +94,9 @@ void read_schem_world(const WorldReadRequest&) {
 }
 
 void write_schem_world(const WorldWriteRequest& request) {
+    SchematicMetadata default_metadata;
+    const SchematicMetadata& metadata = request.metadata == nullptr ? default_metadata : *request.metadata;
+
     Bounds bounds = compute_bounds(request.data);
     int width = bounds.max_x - bounds.min_x + 1;
     int height = bounds.max_y - bounds.min_y + 1;
@@ -140,24 +142,28 @@ void write_schem_world(const WorldWriteRequest& request) {
 
     nbt::Writer writer;
     writer.begin_root_compound();
+    writer.begin_compound("Schematic");
     writer.write_int("Version", kSpongeSchematicVersion);
-    writer.write_int("DataVersion", kMinecraftDataVersion);
+    writer.write_int("DataVersion", metadata.data_version);
     writer.write_short("Width", nbt_width);
     writer.write_short("Height", nbt_height);
     writer.write_short("Length", nbt_length);
     writer.write_int_array("Offset", {0, 0, 0});
-    writer.write_int("PaletteMax", static_cast<std::int32_t>(palette.size()));
+    writer.begin_compound("Blocks");
     writer.begin_compound("Palette");
     for (const auto& [state, index] : palette) {
         writer.write_int(state, index);
     }
     writer.end_compound();
-    writer.write_byte_array("BlockData", block_data);
-    writer.begin_list("BlockEntities", nbt::Tag::Compound, 0);
-    writer.begin_list("Entities", nbt::Tag::Compound, 0);
+    writer.write_byte_array("Data", block_data);
+    writer.begin_list("BlockEntities", nbt::Tag::End, 0);
+    writer.end_compound();
+    writer.begin_list("Entities", nbt::Tag::End, 0);
     writer.begin_compound("Metadata");
-    writer.write_string("Name", "mcvi export");
-    writer.write_string("Author", "mcvi");
+    writer.write_string("Name", metadata.name);
+    writer.write_string("Author", metadata.author);
+    writer.write_int("mc_version", metadata.data_version);
+    writer.end_compound();
     writer.end_compound();
     writer.end_compound();
 

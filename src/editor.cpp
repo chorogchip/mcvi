@@ -7,6 +7,27 @@
 #include "world_io.hpp"
 
 namespace mcvi {
+namespace {
+
+bool row_bounds(const World& world, int y, int z, int& min_x, int& max_x) {
+    bool found = false;
+    for (const auto& [pos, block] : world.blocks()) {
+        if (block == ' ' || pos.y != y || pos.z != z) {
+            continue;
+        }
+        if (!found) {
+            min_x = pos.x;
+            max_x = pos.x;
+            found = true;
+            continue;
+        }
+        min_x = std::min(min_x, pos.x);
+        max_x = std::max(max_x, pos.x);
+    }
+    return found;
+}
+
+} // namespace
 
 void move_left(Editor& editor) {
     if (editor.cursor.x > 0) {
@@ -44,6 +65,26 @@ void move_layer_down(Editor& editor) {
     editor.message = "layer y=" + std::to_string(editor.cursor.y);
 }
 
+void move_first_non_blank(Editor& editor) {
+    int min_x = 0;
+    int max_x = 0;
+    if (row_bounds(editor.world, editor.cursor.y, editor.cursor.z, min_x, max_x)) {
+        editor.cursor.x = std::max(0, min_x);
+        return;
+    }
+    editor.cursor.x = 0;
+}
+
+void move_after_end_of_row(Editor& editor) {
+    int min_x = 0;
+    int max_x = 0;
+    if (row_bounds(editor.world, editor.cursor.y, editor.cursor.z, min_x, max_x)) {
+        editor.cursor.x = std::max(0, max_x + 1);
+        return;
+    }
+    editor.cursor.x = 0;
+}
+
 void insert_char(Editor& editor, char ch) {
     editor.world.set_block(editor.cursor, ch);
     editor.dirty = true;
@@ -65,6 +106,57 @@ void backspace(Editor& editor) {
     editor.cursor = previous;
     editor.world.set_block(editor.cursor, ' ');
     editor.dirty = true;
+}
+
+void delete_at_cursor(Editor& editor) {
+    if (editor.world.block_at(editor.cursor) == ' ') {
+        return;
+    }
+    editor.world.set_block(editor.cursor, ' ');
+    editor.dirty = true;
+}
+
+void delete_before_cursor(Editor& editor) {
+    if (editor.cursor.x <= 0) {
+        return;
+    }
+    --editor.cursor.x;
+    delete_at_cursor(editor);
+}
+
+void delete_to_end_of_row(Editor& editor) {
+    int end_x = editor.world.max_x_on_row(editor.cursor.y, editor.cursor.z);
+    if (editor.cursor.x > end_x) {
+        return;
+    }
+
+    bool changed = false;
+    for (int x = editor.cursor.x; x <= end_x; ++x) {
+        Pos pos{x, editor.cursor.y, editor.cursor.z};
+        if (editor.world.block_at(pos) != ' ') {
+            editor.world.set_block(pos, ' ');
+            changed = true;
+        }
+    }
+    if (changed) {
+        editor.dirty = true;
+    }
+}
+
+void change_to_end_of_row(Editor& editor) {
+    delete_to_end_of_row(editor);
+    editor.mode = Mode::Insert;
+}
+
+void substitute_at_cursor(Editor& editor) {
+    delete_at_cursor(editor);
+    editor.mode = Mode::Insert;
+}
+
+void substitute_row(Editor& editor) {
+    move_first_non_blank(editor);
+    delete_to_end_of_row(editor);
+    editor.mode = Mode::Insert;
 }
 
 void set_direction(Editor& editor, Direction direction) {

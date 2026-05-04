@@ -15,6 +15,12 @@ enum class WorldFormat {
     Json,
 };
 
+struct SchematicMetadata {
+    std::string name = "mcvi export";
+    std::string author = "mcvi";
+    int data_version = 3953;
+};
+
 struct WorldReadRequest {
     World& data;
     BlockAliases* aliases = nullptr;
@@ -27,6 +33,7 @@ struct WorldWriteRequest {
     const BlockAliases* aliases = nullptr;
     std::string filename;
     WorldFormat format;
+    const SchematicMetadata* metadata = nullptr;
 };
 
 WorldFormat format_from_extension(std::string_view filename);

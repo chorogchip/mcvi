@@ -35,11 +35,40 @@ void handle_normal(Editor& editor, char ch) {
     case '$':
         editor.cursor.x = editor.world.max_x_on_row(editor.cursor.y, editor.cursor.z);
         break;
+    case '^':
+        move_first_non_blank(editor);
+        break;
+    case 'x':
+        delete_at_cursor(editor);
+        break;
+    case 'X':
+        delete_before_cursor(editor);
+        break;
+    case 'D':
+        delete_to_end_of_row(editor);
+        break;
+    case 'C':
+        change_to_end_of_row(editor);
+        break;
+    case 's':
+        substitute_at_cursor(editor);
+        break;
+    case 'S':
+        substitute_row(editor);
+        break;
     case 'i':
         editor.mode = Mode::Insert;
         break;
     case 'a':
         move_right(editor);
+        editor.mode = Mode::Insert;
+        break;
+    case 'I':
+        move_first_non_blank(editor);
+        editor.mode = Mode::Insert;
+        break;
+    case 'A':
+        move_after_end_of_row(editor);
         editor.mode = Mode::Insert;
         break;
     case ':':

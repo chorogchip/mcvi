@@ -4,6 +4,7 @@ LDLIBS := -lz
 
 TARGET := mcvi
 SRC := src/main.cpp \
+	src/app_args.cpp \
 	src/mode.cpp \
 	src/block_alias.cpp \
 	src/direction.cpp \
@@ -20,6 +21,7 @@ SRC := src/main.cpp \
 	src/world_io_nbt.cpp \
 	src/world_io_mca.cpp
 HEADERS := src/pos.hpp \
+	src/app_args.hpp \
 	src/world.hpp \
 	src/mode.hpp \
 	src/block_alias.hpp \
