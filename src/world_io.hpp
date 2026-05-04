@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 
+#include "block_alias.hpp"
 #include "world.hpp"
 
 namespace mcvi {
@@ -16,12 +17,14 @@ enum class WorldFormat {
 
 struct WorldReadRequest {
     World& data;
+    BlockAliases* aliases = nullptr;
     std::string filename;
     WorldFormat format;
 };
 
 struct WorldWriteRequest {
     const World& data;
+    const BlockAliases* aliases = nullptr;
     std::string filename;
     WorldFormat format;
 };

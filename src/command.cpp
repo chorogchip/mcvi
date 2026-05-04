@@ -40,7 +40,7 @@ bool write_editor(Editor& editor, std::string filename) {
     }
 
     try {
-        write_world({editor.world, filename, format_from_extension(filename)});
+        write_world({editor.world, &editor.aliases, filename, format_from_extension(filename)});
     } catch (const std::exception& error) {
         editor.message = error.what();
         return false;

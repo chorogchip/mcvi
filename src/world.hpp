@@ -35,6 +35,10 @@ public:
         return blocks_;
     }
 
+    bool empty() const {
+        return blocks_.empty();
+    }
+
     int max_x_on_row(int y, int z) const {
         int max_x = 0;
         for (const auto& [pos, block] : blocks_) {

@@ -77,7 +77,7 @@ void load_initial_file(Editor& editor, const char* filename) {
         return;
     }
     try {
-        read_world({editor.world, filename, format_from_extension(filename)});
+        read_world({editor.world, &editor.aliases, filename, format_from_extension(filename)});
         editor.filename = filename;
         editor.message = "read " + editor.filename;
     } catch (const std::exception& error) {

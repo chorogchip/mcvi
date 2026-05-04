@@ -30,12 +30,20 @@ std::string escape_json_char(char ch) {
     }
 }
 
+std::string escape_json_string(std::string_view text) {
+    std::string out;
+    for (char ch : text) {
+        out += escape_json_char(ch);
+    }
+    return out;
+}
+
 class JsonReader {
 public:
     explicit JsonReader(std::string data)
         : data_(std::move(data)) {}
 
-    World read_world() {
+    World read_world(BlockAliases* aliases) {
         World world;
         expect('{');
         while (!consume('}')) {
@@ -43,6 +51,8 @@ public:
             expect(':');
             if (key == "blocks") {
                 read_blocks(world);
+            } else if (key == "aliases") {
+                read_aliases(aliases);
             } else {
                 skip_value();
             }
@@ -60,6 +70,19 @@ private:
         expect('[');
         while (!consume(']')) {
             read_block(world);
+            consume(',');
+        }
+    }
+
+    void read_aliases(BlockAliases* aliases) {
+        expect('{');
+        while (!consume('}')) {
+            std::string key = read_string();
+            expect(':');
+            std::string value = read_string();
+            if (aliases != nullptr && key.size() == 1 && is_block_alias_char(key[0])) {
+                aliases->set(key[0], value);
+            }
             consume(',');
         }
     }
@@ -245,7 +268,7 @@ private:
 } // namespace
 
 void read_json_world(const WorldReadRequest& request) {
-    request.data = JsonReader(io::read_text_file(request.filename)).read_world();
+    request.data = JsonReader(io::read_text_file(request.filename)).read_world(request.aliases);
 }
 
 void write_json_world(const WorldWriteRequest& request) {
@@ -257,6 +280,19 @@ void write_json_world(const WorldWriteRequest& request) {
     std::vector<std::pair<Pos, char>> blocks = io::sorted_blocks(request.data);
     output << "{\n";
     output << "  \"format\": \"mcvi-json-v1\",\n";
+    output << "  \"aliases\": {\n";
+    if (request.aliases != nullptr) {
+        const auto& aliases = request.aliases->entries();
+        std::size_t index = 0;
+        for (const auto& [alias, block_name] : aliases) {
+            output << "    \"" << escape_json_char(alias) << "\": \"" << escape_json_string(block_name) << "\"";
+            if (++index != aliases.size()) {
+                output << ',';
+            }
+            output << '\n';
+        }
+    }
+    output << "  },\n";
     output << "  \"blocks\": [\n";
     for (std::size_t i = 0; i < blocks.size(); ++i) {
         const auto& [pos, block] = blocks[i];

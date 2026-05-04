@@ -3,9 +3,63 @@
 #include <cstdlib>
 #include <iostream>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <unistd.h>
 
 namespace mcvi {
+namespace {
+
+constexpr char ESC = 27;
+
+bool wait_for_input(int timeout_usec) {
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(STDIN_FILENO, &read_fds);
+
+    timeval timeout{};
+    timeout.tv_usec = timeout_usec;
+
+    int result = select(STDIN_FILENO + 1, &read_fds, nullptr, nullptr, &timeout);
+    return result > 0 && FD_ISSET(STDIN_FILENO, &read_fds);
+}
+
+char read_raw_byte() {
+    char ch = 0;
+    ssize_t nread = read(STDIN_FILENO, &ch, 1);
+    if (nread == 1) {
+        return ch;
+    }
+    return 0;
+}
+
+char translate_escape_sequence() {
+    if (!wait_for_input(25000)) {
+        return ESC;
+    }
+
+    char first = read_raw_byte();
+    if (first != '[') {
+        return ESC;
+    }
+    if (!wait_for_input(25000)) {
+        return ESC;
+    }
+
+    switch (read_raw_byte()) {
+    case 'A':
+        return 'k';
+    case 'B':
+        return 'j';
+    case 'C':
+        return 'l';
+    case 'D':
+        return 'h';
+    default:
+        return ESC;
+    }
+}
+
+} // namespace
 
 void write_all(std::string_view data) {
     while (!data.empty()) {
@@ -26,12 +80,11 @@ TerminalSize terminal_size() {
 }
 
 char read_key() {
-    char ch = 0;
-    ssize_t nread = read(STDIN_FILENO, &ch, 1);
-    if (nread == 1) {
-        return ch;
+    char ch = read_raw_byte();
+    if (ch == ESC) {
+        return translate_escape_sequence();
     }
-    return 0;
+    return ch;
 }
 
 RawTerminal::RawTerminal() {

@@ -10,6 +10,7 @@ class BlockAliases {
 public:
     void set(char alias, std::string block_name);
     const std::string* get(char alias) const;
+    const std::map<char, std::string>& entries() const;
 
     std::string describe(char alias) const;
     std::string describe_all() const;

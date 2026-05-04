@@ -1,5 +1,6 @@
 CXX := g++
 CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic -O2
+LDLIBS := -lz
 
 TARGET := mcvi
 SRC := src/main.cpp \
@@ -14,6 +15,7 @@ SRC := src/main.cpp \
 	src/world_io.cpp \
 	src/world_io_common.cpp \
 	src/world_io_json.cpp \
+	src/nbt_writer.cpp \
 	src/world_io_schem.cpp \
 	src/world_io_nbt.cpp \
 	src/world_io_mca.cpp
@@ -29,14 +31,15 @@ HEADERS := src/pos.hpp \
 	src/input.hpp \
 	src/world_io.hpp \
 	src/world_io_common.hpp \
-	src/world_io_formats.hpp
+	src/world_io_formats.hpp \
+	src/nbt_writer.hpp
 
 .PHONY: all clean run
 
 all: $(TARGET)
 
 $(TARGET): $(SRC) $(HEADERS)
-	$(CXX) $(CXXFLAGS) -o $@ $(SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $(SRC) $(LDLIBS)
 
 run: $(TARGET)
 	./$(TARGET)

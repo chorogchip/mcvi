@@ -37,6 +37,10 @@ const std::string* BlockAliases::get(char alias) const {
     return &it->second;
 }
 
+const std::map<char, std::string>& BlockAliases::entries() const {
+    return aliases_;
+}
+
 std::string BlockAliases::describe(char alias) const {
     const std::string* block_name = get(alias);
     if (block_name == nullptr) {
