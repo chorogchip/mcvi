@@ -23,8 +23,12 @@ std::string trim(std::string_view text) {
     return std::string(text);
 }
 
+bool starts_with(std::string_view text, std::string_view prefix) {
+    return text.size() >= prefix.size() && text.compare(0, prefix.size(), prefix) == 0;
+}
+
 std::string command_argument(std::string_view command, std::string_view name) {
-    if (!command.starts_with(name)) {
+    if (!starts_with(command, name)) {
         return "";
     }
     command.remove_prefix(name.size());
@@ -116,7 +120,7 @@ void execute_command(Editor& editor) {
         (void)write_editor(editor, "");
         return;
     }
-    if (command.starts_with("w ")) {
+    if (starts_with(command, "w ")) {
         (void)write_editor(editor, command_argument(command, "w"));
         return;
     }
@@ -126,11 +130,11 @@ void execute_command(Editor& editor) {
         }
         return;
     }
-    if (command == "bl" || command.starts_with("bl ")) {
+    if (command == "bl" || starts_with(command, "bl ")) {
         (void)handle_block_alias_command(editor.aliases, command_argument(command, "bl"), editor.message);
         return;
     }
-    if (command == "meta" || command.starts_with("meta ")) {
+    if (command == "meta" || starts_with(command, "meta ")) {
         (void)handle_metadata_command(editor, command_argument(command, "meta"));
         return;
     }

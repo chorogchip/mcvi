@@ -12,6 +12,17 @@ Blocks are edited as single display characters. Minecraft block states are assig
 
 ## Build
 
+`mcvi` requires a C++17 compiler and zlib.
+
+The recommended build path is CMake:
+
+```sh
+cmake -S . -B build
+cmake --build build
+```
+
+The existing Makefile is also supported:
+
 ```sh
 make
 ```
@@ -122,3 +133,7 @@ Insert mode advances in the active direction.
 - palette is stored in `Schematic.Blocks.Palette`
 - metadata is stored in `Schematic.Metadata`
 - every non-space block character must have an alias before export
+
+## License
+
+`mcvi` is MIT licensed.

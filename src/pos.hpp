@@ -9,7 +9,9 @@ struct Pos {
     int y = 0;
     int z = 0;
 
-    friend bool operator==(const Pos&, const Pos&) = default;
+    friend bool operator==(const Pos& lhs, const Pos& rhs) {
+        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
+    }
 };
 
 inline Pos operator+(Pos lhs, Pos rhs) {
